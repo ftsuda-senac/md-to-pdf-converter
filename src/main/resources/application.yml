@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: md-to-pdf
+  # Desabilita o banner do Spring Boot (desnecessário para CLI)
+  main:
+    banner-mode: off
+
+mdpdf:
+  # Diretório contendo os arquivos .md de entrada
+  # Pode ser sobreescrito por variável de ambiente: MDPDF_INPUT_DIR
+  input-dir: ${MDPDF_INPUT_DIR:./markdowns}
+
+  # Diretório onde os PDFs gerados serão salvos (criado automaticamente se não existir)
+  output-dir: ${MDPDF_OUTPUT_DIR:./pdfs}
+
+  # DPI para rasterizar os blocos :::protected como imagem
+  # 144 = boa qualidade no PDF sem arquivo muito grande
+  # 192 = alta qualidade (recomendado para impressão)
+  image-dpi: ${MDPDF_IMAGE_DPI:144}
+
+logging:
+  level:
+    root: WARN
+    br.edu.senac.mdpdf: INFO
+    # Descomente para ver logs detalhados do OpenHTMLtoPDF:
+    # com.openhtmltopdf: WARN

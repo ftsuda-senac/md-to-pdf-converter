@@ -1,0 +1,255 @@
+/* =============================================================================
+   github.css — Estilo GitHub Markdown para PDF via OpenHTMLtoPDF
+   Compatível com CSS 2.1 (sem flexbox, grid, variáveis ou calc)
+   ============================================================================= */
+
+/* Configuração de página A4 */
+@page {
+    size: A4;
+    margin: 10mm 15mm;
+}
+
+/* Evitar quebra de página dentro de elementos críticos */
+pre, table, blockquote {
+    page-break-inside: avoid;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+}
+
+img {
+    page-break-inside: avoid;
+}
+
+/* =============================================================================
+   Base
+   ============================================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: NotoSans, NotoEmoji, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #24292e;
+    background-color: #ffffff;
+    word-wrap: break-word;
+}
+
+.markdown-body {
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+/* =============================================================================
+   Tipografia
+   ============================================================================= */
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #24292e;
+}
+
+h1 {
+    font-size: 2em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #eaecef;
+}
+
+h2 {
+    font-size: 1.5em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #eaecef;
+}
+
+h3 { font-size: 1.25em; }
+h4 { font-size: 1em; }
+h5 { font-size: 0.875em; }
+h6 { font-size: 0.85em; color: #6a737d; }
+
+p {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+/* =============================================================================
+   Links
+   ============================================================================= */
+
+a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* =============================================================================
+   Código inline e blocos
+   ============================================================================= */
+
+code {
+    font-family: NotoSansMono, "Courier New", Courier, monospace;
+    font-size: 85%;
+    background-color: rgba(27, 31, 35, 0.05);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+
+pre {
+    word-wrap: normal;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f6f8fa;
+    border-radius: 3px;
+    padding: 16px;
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-family: NotoSansMono, "Courier New", Courier, monospace;
+}
+
+pre code {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    border: 0;
+}
+
+/* =============================================================================
+   Citações (blockquote)
+   ============================================================================= */
+
+blockquote {
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+    margin: 0 0 16px 0;
+}
+
+blockquote > :first-child { margin-top: 0; }
+blockquote > :last-child  { margin-bottom: 0; }
+
+/* =============================================================================
+   Listas
+   ============================================================================= */
+
+ul, ol {
+    padding-left: 2em;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+li {
+    word-wrap: break-word;
+}
+
+li + li {
+    margin-top: 0.25em;
+}
+
+/* Task list (GFM) */
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item input {
+    margin: 0 0.2em 0.25em -1.6em;
+    vertical-align: middle;
+}
+
+/* =============================================================================
+   Tabelas
+   ============================================================================= */
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 16px;
+    overflow: auto;
+}
+
+table th {
+    font-weight: 600;
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+    background-color: #f6f8fa;
+}
+
+table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+table tr {
+    background-color: #ffffff;
+    border-top: 1px solid #c6cbd1;
+}
+
+table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
+/* =============================================================================
+   Separador horizontal
+   ============================================================================= */
+
+hr {
+    height: 0.25em;
+    padding: 0;
+    margin: 24px 0;
+    background-color: #e1e4e8;
+    border: 0;
+    overflow: hidden;
+}
+
+/* =============================================================================
+   Imagens
+   ============================================================================= */
+
+img {
+    max-width: 100%;
+    box-sizing: content-box;
+    background-color: #ffffff;
+}
+
+/* =============================================================================
+   Destaque de sintaxe (highlight.js inline — opcional)
+   ============================================================================= */
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in    { color: #d73a49; }
+
+.hljs-string,
+.hljs-attr        { color: #032f62; }
+
+.hljs-comment,
+.hljs-quote       { color: #6a737d; font-style: italic; }
+
+.hljs-number,
+.hljs-literal     { color: #005cc5; }
+
+.hljs-title,
+.hljs-section     { color: #6f42c1; font-weight: bold; }
+
+.hljs-type,
+.hljs-class       { color: #6f42c1; }
+
+.hljs-meta        { color: #e36209; }
