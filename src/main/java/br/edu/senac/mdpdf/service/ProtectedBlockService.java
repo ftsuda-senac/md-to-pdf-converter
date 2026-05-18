@@ -44,10 +44,9 @@ public class ProtectedBlockService {
 		@page {
 			size: A4;
 			margin: 0;
-
-			pre, table, blockquote {
-				page-break-inside: avoid;
-			}
+		}
+		pre, table, blockquote {
+			page-break-inside: avoid;
 		}
 		body {
 			font-family: NotoSans, NotoEmoji, Helvetica, Arial, sans-serif;
@@ -67,7 +66,7 @@ public class ProtectedBlockService {
 		code {
 			font-family: NotoSansMono, "Courier New", Courier, monospace;
 			font-size: 90%;
-			background-color: rgba(27,31,35,0.07);
+			background-color: #ebebeb;
 			padding: 2px 5px;
 			border-radius: 3px;
 		}
@@ -78,7 +77,6 @@ public class ProtectedBlockService {
 			font-size: 90%;
 			font-family: NotoSansMono, "Courier New", Courier, monospace;
 			line-height: 1.45;
-			overflow: auto;
 			margin-bottom: 12px;
 		}
 		pre code { background: none; padding: 0; font-size: 100%; }

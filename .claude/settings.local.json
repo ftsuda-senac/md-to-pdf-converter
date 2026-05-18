@@ -5,7 +5,11 @@
       "WebFetch(domain:fonts.google.com)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebSearch"
+      "WebSearch",
+      "Read(//e/tmp/**)",
+      "Bash(curl -s -L -o openhtmltopdf-pdfbox-1.0.10.jar \"https://repo1.maven.org/maven2/com/openhtmltopdf/openhtmltopdf-pdfbox/1.0.10/openhtmltopdf-pdfbox-1.0.10.jar\")",
+      "Bash(jar tf *)",
+      "Bash(grep -v \"\\\\.class$\")"
     ]
   }
 }

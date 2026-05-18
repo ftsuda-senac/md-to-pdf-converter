@@ -99,14 +99,13 @@ a:hover {
 code {
     font-family: NotoSansMono, "Courier New", Courier, monospace;
     font-size: 85%;
-    background-color: rgba(27, 31, 35, 0.05);
+    background-color: #f3f3f3;
     padding: 0.2em 0.4em;
     border-radius: 3px;
 }
 
 pre {
     word-wrap: normal;
-    overflow: auto;
     font-size: 85%;
     line-height: 1.45;
     background-color: #f6f8fa;
@@ -122,7 +121,6 @@ pre code {
     padding: 0;
     margin: 0;
     font-size: 100%;
-    word-break: normal;
     white-space: pre;
     border: 0;
 }
@@ -179,10 +177,10 @@ li + li {
    ============================================================================= */
 
 table {
+    font-size: 0.8em;
     border-collapse: collapse;
     width: 100%;
     margin-bottom: 16px;
-    overflow: auto;
 }
 
 table th {

@@ -18,9 +18,16 @@ mdpdf:
   # 192 = alta qualidade (recomendado para impressão)
   image-dpi: ${MDPDF_IMAGE_DPI:144}
 
+  # Autor padrão embutido nos metadados dos PDFs gerados.
+  # Pode ser sobreescrito por frontmatter no arquivo .md (author: ...).
+  # Deixe vazio para omitir o campo author quando não houver frontmatter.
+  author: ${MDPDF_AUTHOR:}
+
 logging:
   level:
     root: WARN
-    br.edu.senac.mdpdf: INFO
+    "[br.edu.senac.mdpdf]": INFO
     # Descomente para ver logs detalhados do OpenHTMLtoPDF:
     # com.openhtmltopdf: WARN
+    # Suprime aviso benigno do NotoEmoji (Format 14 cmap — Unicode Variation Sequences):
+    "[org.apache.fontbox.ttf.CmapSubtable]": ERROR

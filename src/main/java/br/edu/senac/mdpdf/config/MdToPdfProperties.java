@@ -28,5 +28,12 @@ public record MdToPdfProperties(
 	 * DPI usado ao rasterizar blocos protegidos como imagem.
 	 * 144 dpi = boa qualidade sem arquivo muito grande.
 	 */
-	@DefaultValue("144") int imageDpi
+	@DefaultValue("144") int imageDpi,
+
+	/**
+	 * Autor padrão embutido nos metadados do PDF.
+	 * Pode ser sobreescrito por frontmatter no arquivo .md ({@code author: ...}).
+	 * Se vazio, o campo author não é preenchido.
+	 */
+	@DefaultValue("") String author
 ) {}

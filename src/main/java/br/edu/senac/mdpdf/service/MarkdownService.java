@@ -1,5 +1,6 @@
 package br.edu.senac.mdpdf.service;
 
+import br.edu.senac.mdpdf.model.PdfMetadata;
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +59,14 @@ public class MarkdownService {
 		Pattern.compile("^:::protected\\r?\\n(.*?)\\r?\\n^:::\\s*$",
 			Pattern.DOTALL | Pattern.MULTILINE);
 
+	/** Frontmatter YAML delimitado por {@code ---} no início do arquivo. */
+	private static final Pattern FRONTMATTER =
+		Pattern.compile("^---\\r?\\n(.*?)\\r?\\n---\\r?\\n?", Pattern.DOTALL);
+
+	/** Primeiro heading H1 do conteúdo markdown. */
+	private static final Pattern FIRST_H1 =
+		Pattern.compile("^#\\s+(.+)$", Pattern.MULTILINE);
+
 	/** Detecta blocos de código Mermaid: ```mermaid ... ``` em linhas próprias. */
 	private static final Pattern MERMAID_BLOCK =
 		Pattern.compile("^```mermaid\\r?\\n(.*?)\\r?\\n^```\\s*$",
@@ -95,8 +106,46 @@ public class MarkdownService {
 	 * @param markdownContent conteúdo bruto do arquivo .md.
 	 * @return página HTML completa como string.
 	 */
+	/**
+	 * Extrai metadados do frontmatter YAML e/ou do conteúdo markdown.
+	 *
+	 * @param markdownContent conteúdo bruto do arquivo .md.
+	 * @param filenameHint    nome base do arquivo, usado como título de último recurso.
+	 * @return metadados para embutir no PDF.
+	 */
+	public PdfMetadata extractMetadata(String markdownContent, String filenameHint) {
+		if (markdownContent.startsWith("﻿")) markdownContent = markdownContent.substring(1);
+
+		Map<String, String> fm = new HashMap<>();
+		String body = markdownContent;
+
+		Matcher fmMatcher = FRONTMATTER.matcher(markdownContent);
+		if (fmMatcher.find()) {
+			body = markdownContent.substring(fmMatcher.end());
+			for (String line : fmMatcher.group(1).split("\\r?\\n")) {
+				int colon = line.indexOf(':');
+				if (colon > 0) {
+					fm.put(line.substring(0, colon).trim().toLowerCase(),
+						   line.substring(colon + 1).trim());
+				}
+			}
+		}
+
+		String title = fm.getOrDefault("title", null);
+		if (title == null) {
+			Matcher h1 = FIRST_H1.matcher(body);
+			title = h1.find() ? h1.group(1).trim() : filenameHint;
+		}
+
+		return new PdfMetadata(title, fm.getOrDefault("author", null), fm.getOrDefault("subject", null));
+	}
+
 	public String toHtml(String markdownContent) {
 		if (markdownContent.startsWith("﻿")) markdownContent = markdownContent.substring(1);
+
+		// Strip frontmatter so it doesn't appear in the rendered output
+		Matcher fmMatcher = FRONTMATTER.matcher(markdownContent);
+		if (fmMatcher.find()) markdownContent = markdownContent.substring(fmMatcher.end());
 
 		// 1. Substituir blocos Mermaid por <img> de diagrama renderizado
 		String withMermaid = replaceMermaidBlocks(markdownContent);

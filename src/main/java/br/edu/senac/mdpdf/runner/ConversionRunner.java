@@ -1,6 +1,7 @@
 package br.edu.senac.mdpdf.runner;
 
 import br.edu.senac.mdpdf.config.MdToPdfProperties;
+import br.edu.senac.mdpdf.model.PdfMetadata;
 import br.edu.senac.mdpdf.service.MarkdownService;
 import br.edu.senac.mdpdf.service.PdfService;
 import org.slf4j.Logger;
@@ -101,12 +102,21 @@ public class ConversionRunner implements CommandLineRunner {
 		log.info("Convertendo: {}", mdFile.getFileName());
 
 		String markdown = Files.readString(mdFile, StandardCharsets.UTF_8);
-		String html     = markdownService.toHtml(markdown);
 
-		String pdfName  = replaceMdExtension(mdFile.getFileName().toString());
+		String filenameHint = mdFile.getFileName().toString().replaceFirst("\\.md$", "");
+		PdfMetadata metadata = markdownService.extractMetadata(markdown, filenameHint);
+
+		// Apply default author from config when not specified in frontmatter
+		if (metadata.author() == null && !properties.author().isBlank()) {
+			metadata = metadata.withAuthor(properties.author());
+		}
+
+		String html = markdownService.toHtml(markdown);
+
+		String pdfName   = replaceMdExtension(mdFile.getFileName().toString());
 		Path destination = outputDir.resolve(pdfName);
 
-		pdfService.renderToFile(html, destination);
+		pdfService.renderToFile(html, destination, metadata);
 	}
 
 	private List<Path> listMarkdownFiles(Path dir) {

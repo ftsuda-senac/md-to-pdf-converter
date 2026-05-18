@@ -15,6 +15,8 @@ Desenvolvido para uso didático no SENAC (TADS — Desenvolvimento de Software W
 - Blocos `:::protected` são renderizados como imagem — gabaritos e respostas ficam protegidos.
 - **Syntax highlighting** nativo para Java, JavaScript/TypeScript, HTML/XML e CSS.
 - **Diagramas Mermaid** (blocos ` ```mermaid `) são renderizados como imagem via Docker.
+- Saída em **PDF/A-3b** — documento autocontido, arquivável e validável.
+- **Metadados legíveis** (título, autor, assunto) embutidos no PDF via frontmatter YAML.
 - Configuração via `application.yml` ou variáveis de ambiente.
 - Suporte a extensões **GitHub Flavored Markdown**: tabelas, strikethrough, task lists, autolink.
 
@@ -46,17 +48,21 @@ md-to-pdf/
     │   ├── MdToPdfApplication.java
     │   ├── config/
     │   │   └── MdToPdfProperties.java  ← @ConfigurationProperties
+    │   ├── model/
+    │   │   └── PdfMetadata.java        ← metadados do PDF (título, autor, assunto)
     │   ├── service/
     │   │   ├── MarkdownService.java    ← MD → HTML (Flexmark + pré-processamento)
     │   │   ├── ProtectedBlockService.java  ← :::protected → imagem base64
     │   │   ├── MermaidService.java     ← blocos mermaid → PNG via Docker
     │   │   ├── SyntaxHighlighter.java  ← syntax highlighting nativo (hljs-*)
-    │   │   └── PdfService.java         ← HTML → PDF (OpenHTMLtoPDF)
+    │   │   └── PdfService.java         ← HTML → PDF/A-3b (OpenHTMLtoPDF + PDFBox)
     │   └── runner/
     │       └── ConversionRunner.java   ← orquestra a conversão em lote
     └── resources/
         ├── application.yml
         ├── fonts/                      ← fontes Noto (Regular, Bold, Mono, Emoji)
+        ├── icc/
+        │   └── sRGB.icc               ← perfil ICC sRGB (obrigatório para PDF/A-3b)
         └── github.css                  ← folha de estilos GitHub (CSS 2.1)
 ```
 
@@ -67,10 +73,11 @@ md-to-pdf/
 | Biblioteca | Papel |
 |---|---|
 | [Flexmark](https://github.com/vsch/flexmark-java) `0.64.8` | Markdown → HTML com extensões GFM |
-| [OpenHTMLtoPDF](https://github.com/danfickle/openhtmltopdf) `1.0.10` | HTML → PDF (baseado em PDFBox) |
+| [OpenHTMLtoPDF](https://github.com/danfickle/openhtmltopdf) `1.0.10` | HTML → PDF/A-3b (baseado em PDFBox) |
 | `openhtmltopdf-svg-support` | Suporte a SVG embutido no PDF |
 | [Jsoup](https://jsoup.org/) `1.18.3` | Converte HTML5 em XHTML válido para o OpenHTMLtoPDF |
-| Apache PDFBox | Rasterização do PDF → imagem (transitivo) |
+| Apache PDFBox `2.0.24` | Rasterização PDF → imagem e pós-processamento de metadados |
+| Apache XMPBox `2.0.24` | Sincronização de metadados XMP (transitivo via PDFBox) |
 
 ---
 
@@ -84,6 +91,7 @@ mdpdf:
   input-dir:  ./markdowns   # env: MDPDF_INPUT_DIR
   output-dir: ./pdfs        # env: MDPDF_OUTPUT_DIR
   image-dpi:  144           # env: MDPDF_IMAGE_DPI  (144 = qualidade padrão, 192 = alta)
+  author:                   # env: MDPDF_AUTHOR     (autor padrão; sobrescrito pelo frontmatter)
 ```
 
 ### Variáveis de ambiente
@@ -92,6 +100,7 @@ mdpdf:
 export MDPDF_INPUT_DIR=/home/usuario/provas
 export MDPDF_OUTPUT_DIR=/home/usuario/provas/pdf
 export MDPDF_IMAGE_DPI=192
+export MDPDF_AUTHOR="Prof. Fernando Tsuda"
 ```
 
 ---
@@ -126,6 +135,53 @@ MDPDF_INPUT_DIR=/suas/provas \
 MDPDF_OUTPUT_DIR=/saida/pdfs \
 ./mvnw spring-boot:run
 ```
+
+---
+
+## Metadados PDF
+
+Os PDFs gerados são **PDF/A-3b** e carregam metadados legíveis no campo
+"Propriedades do Documento" de qualquer leitor de PDF (Adobe Acrobat, Chrome, Evince, etc.).
+
+### Frontmatter YAML
+
+Adicione um bloco `---` no início do arquivo `.md` para definir os metadados:
+
+```markdown
+---
+title: Aula 03 — Normalização de Dados
+author: Prof. Fernando Tsuda
+subject: Banco de Dados II — TADS
+---
+
+# Conteúdo do documento aqui...
+```
+
+O frontmatter é removido antes da renderização — **não aparece no corpo do PDF**.
+
+### Campos suportados
+
+| Chave no frontmatter | Variável de ambiente | Campo no PDF | XMP |
+|---|---|---|---|
+| `title` | — | `Title` | `dc:title` |
+| `author` | `MDPDF_AUTHOR` | `Author` | `dc:creator` |
+| `subject` | — | `Subject` | `dc:description` |
+
+O frontmatter tem prioridade sobre a variável de ambiente `MDPDF_AUTHOR`.
+
+### Fallback automático do título
+
+Quando `title` não está no frontmatter, o conversor usa:
+1. Primeiro heading `# ` do documento.
+2. Nome base do arquivo (sem `.md`), como último recurso.
+
+### Campos definidos automaticamente
+
+| Campo | Valor |
+|---|---|
+| `Creator` / `xmp:CreatorTool` | `"md-to-pdf"` |
+| `CreationDate` / `xmp:CreateDate` | Data e hora da conversão |
+| `pdfaid:part` / `pdfaid:conformance` | `1` / `B` (PDF/A-3b) |
 
 ---
 
@@ -211,6 +267,8 @@ Blocos sem identificador de linguagem são exibidos em fonte monospace sem color
 arquivo.md
     │
     ├─ 0. BOM UTF-8 removido (se presente)
+    │      Frontmatter YAML extraído → PdfMetadata (title, author, subject)
+    │      Frontmatter removido do conteúdo antes de renderizar
     │
     ├─ 1. Regex localiza ```mermaid...```
     │         │
@@ -233,7 +291,10 @@ arquivo.md
     │
     ├─ 5. HTML completo montado com github.css inline
     │
-    └─ 6. PdfService → OpenHTMLtoPDF → arquivo.pdf salvo em output-dir
+    └─ 6. PdfService
+           ├─ OpenHTMLtoPDF → PDF/A-3b com perfil ICC sRGB embutido
+           └─ PDFBox → metadados gravados no info dict e sincronizados no XMP
+              → arquivo.pdf salvo em output-dir
 ```
 
 ---
